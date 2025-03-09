@@ -2,7 +2,7 @@ import tkinter as tk
 from tkinter import filedialog, ttk
 from PIL import Image, ImageTk
 import numpy as np
-
+from PIL import Image
 import matplotlib
 matplotlib.use("TkAgg")
 import matplotlib.pyplot as plt
@@ -13,7 +13,7 @@ WINDOW_WIDTH = 1100
 WINDOW_HEIGHT = 700
 
 IMAGE_PREVIEW_SIZE = 350
-IMAGE_PREVIEW_PADDING = 30  # We'll still use this for consistent offsets
+IMAGE_PREVIEW_PADDING = 30
 
 OPTION_BUTTON_HEIGHT = 2
 OPTION_BUTTON_WIDTH = 26
@@ -30,23 +30,20 @@ BOTTOM_BUTTON_HEIGHT = 3
 # ------------------ PARAMETRY OBSZARU WYKRESU ------------------
 CHART_FRAME_WIDTH = 300    # szerokość ramki na wykres
 CHART_FRAME_HEIGHT = 250   # wysokość ramki na wykres
-CHART_FIG_WIDTH = 3        # szerokość figury (w calach) w matplotlib
+CHART_FIG_WIDTH = 3      # szerokość figury (w calach) w matplotlib
 CHART_FIG_HEIGHT = 2.5     # wysokość figury (w calach) w matplotlib
-
-# CONSTANT SPACING BETWEEN TWO PLACEHOLDERS/IMAGES
-CONSTANT_SPACING_BETWEEN_IMAGES = 40
 
 class ImageProcessorApp:
     def __init__(self, root):
         self.root = root
         self.root.title("Image Processor")
         self.root.geometry(f"{WINDOW_WIDTH}x{WINDOW_HEIGHT}")
-        self.root.resizable(True, True)
+        self.root.resizable(True,True)
         
         # ----- PRZECHOWYWANE DANE -----
-        self.original_image = None  
+        self.original_image = None  # np.array obrazu
         self.image_loaded_original = None
-        self.current_processed_image = None  
+        self.current_processed_image = None  # np.array obrazu po przetworzeniu
 
         # ----- PARAMETRY / TOGGLES -----
         self.grayscale = False
@@ -101,6 +98,7 @@ class ImageProcessorApp:
         self.apply_button = tk.Button(
             self.toolbar, text="Apply", relief=tk.RAISED, padx=10, pady=5, command=self.apply_changes
         )
+
         self.apply_button.pack(side=tk.LEFT, padx=5, pady=5)
         
         self.exit_button = tk.Button(
@@ -124,16 +122,16 @@ class ImageProcessorApp:
         self.image_display_frame.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
 
         # 1) Kontener na obrazy
-        # We'll use pack here, so we can anchor top. 
         self.images_container = tk.Frame(self.image_display_frame, bg="#ffffff")
-        self.images_container.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
+        self.images_container.grid(row=0, column=0, columnspan=2, sticky="n")
 
         # 2) Ramka na wykres
         self.charts_frame = tk.Frame(
             self.image_display_frame, bg="#ddd",
             width=CHART_FRAME_WIDTH, height=CHART_FRAME_HEIGHT
         )
-        self.charts_frame.pack(side=tk.TOP, pady=10)
+        self.charts_frame.grid(row=1, column=0, columnspan=2, pady=10)
+        # Wyłączamy automatyczne dopasowanie rozmiaru
         self.charts_frame.pack_propagate(False)
         self.chart_canvas = None
 
@@ -143,6 +141,9 @@ class ImageProcessorApp:
 
     # =================== SIDEBAR I JEGO ZAWARTOŚĆ ===================
     def create_sidebar(self):
+        """
+        Tworzy przewijalny panel po lewej stronie.
+        """
         self.sidebar_canvas = tk.Canvas(self.sidebar_frame, bg="#e0e0e0", width=SIDEBAR_WIDTH)
         self.scrollbar = tk.Scrollbar(self.sidebar_frame, orient=tk.VERTICAL, command=self.sidebar_canvas.yview)
         self.sidebar_content = tk.Frame(self.sidebar_canvas, bg="#e0e0e0", width=SIDEBAR_WIDTH)
@@ -163,6 +164,7 @@ class ImageProcessorApp:
         self.create_custom_filter_section("Custom Filter")
         self.create_edge_detection_section("Wykrywanie krawędzi")
         self.create_plots_section("Wykresy")
+
 
     def toggle_section(self, frame):
         if frame.winfo_ismapped():
@@ -370,82 +372,68 @@ class ImageProcessorApp:
     # =================== PLACEHOLDERY (3 KWADRATY) ===================
     def display_placeholder_images(self):
         """
-        Creates two placeholder frames side-by-side, with a constant spacing in-between.
-        They remain centered as a group in X-axis.
+        Tworzy dwa kwadraty w self.images_container (lewy i prawy)
+        z etykietami 'Obraz 1' i 'Obraz 2'.
         """
         for widget in self.images_container.winfo_children():
             widget.destroy()
 
-        # Create a sub-frame that we will center, with side-by-side placeholders
-        two_image_frame = tk.Frame(self.images_container, bg="#ffffff")
-        two_image_frame.pack(expand=True, anchor="center")  
-        # anchor="center" ensures the entire frame is centered horizontally
-
-        # LEFT PLACEHOLDER
         left_frame = tk.Frame(
-            two_image_frame,
-            width=IMAGE_PREVIEW_SIZE,
-            height=int((2/3)*IMAGE_PREVIEW_SIZE),
-            bg="#ddd",
-            bd=0,
-            relief=tk.FLAT
+            self.images_container, width=IMAGE_PREVIEW_SIZE, height=int((2/3)*IMAGE_PREVIEW_SIZE),
+            # bg="#ddd", bd=2, relief=tk.SOLID
+            bg="#ddd",            # Ten sam kolor co placeholder wykresu
+            bd=0,                 # Usuwamy obramowanie
+            relief=tk.FLAT        # Brak efektu "SOLID"
         )
-        left_frame.pack(side=tk.LEFT, padx=(0, CONSTANT_SPACING_BETWEEN_IMAGES), pady=40)
-
+        left_frame.grid(row=0, column=0, padx=IMAGE_PREVIEW_PADDING, pady=(40,40))
+        # Etykieta w środku
         label_left = tk.Label(left_frame, text="Obraz oryginalny", bg="#ddd")
         label_left.place(relx=0.5, rely=0.5, anchor=tk.CENTER)
 
-        # RIGHT PLACEHOLDER
         right_frame = tk.Frame(
-            two_image_frame,
-            width=IMAGE_PREVIEW_SIZE,
-            height=int((2/3)*IMAGE_PREVIEW_SIZE),
-            bg="#ddd",
-            bd=0,
-            relief=tk.FLAT
+            self.images_container, width=IMAGE_PREVIEW_SIZE, height=int((2/3)*IMAGE_PREVIEW_SIZE),
+            # bg="#ddd", bd=2, relief=tk.SOLID
+            bg="#ddd",            # Ten sam kolor co placeholder wykresu
+            bd=0,                 # Usuwamy obramowanie
+            relief=tk.FLAT        # Brak efektu "SOLID"
         )
-        right_frame.pack(side=tk.LEFT, padx=(0,0), pady=40)
-
+        right_frame.grid(row=0, column=1, padx=IMAGE_PREVIEW_PADDING, pady=(40,40))
+        # Etykieta w środku
         label_right = tk.Label(right_frame, text="Obraz przetworzony", bg="#ddd")
         label_right.place(relx=0.5, rely=0.5, anchor=tk.CENTER)
 
     def display_placeholder_chart(self):
         """
-        Tworzy placeholder (kwadrat) w self.charts_frame z napisem 'Wykres'.
+        Tworzy placeholder (kwadrat) w self.charts_frame z napisem 'Wykres (placeholder)'.
         """
-        self.clear_chart_if_exists()
-        placeholder_label = tk.Label(self.charts_frame, text="Wykres", bg="#ddd")
+        self.clear_chart_if_exists()  # usuwamy ewentualny poprzedni canvas
+        # Prosty label w środku
+        placeholder_label = tk.Label(self.charts_frame, text="Wykres",bg="#ddd")
         placeholder_label.place(relx=0.5, rely=0.5, anchor=tk.CENTER)
 
     # =================== WYŚWIETLANIE OBRAZÓW PO WCZYTANIU ===================
     def display_images(self):
         """
-        Displays the original & processed images side-by-side, with a constant spacing,
-        and centers them as a group.
+        Odświeża podgląd obrazów (jeśli wczytano plik).
+        TYLKO usuwa widgety w self.images_container, żeby nie kasować ramki wykresu.
         """
         for widget in self.images_container.winfo_children():
             widget.destroy()
 
         if self.original_image is None:
+            # Jeśli brak obrazu, stawiamy z powrotem placeholdery
             self.display_placeholder_images()
             return
 
-        # Create a sub-frame to hold both images side by side
-        two_image_frame = tk.Frame(self.images_container, bg="#ffffff")
-        two_image_frame.pack(expand=True, anchor="center")
+        left_frame = tk.Frame(self.images_container, width=IMAGE_PREVIEW_SIZE, height=IMAGE_PREVIEW_SIZE)
+        left_frame.grid(row=0, column=0, padx=IMAGE_PREVIEW_PADDING, pady=20)
 
-        # LEFT IMAGE
-        left_frame = tk.Frame(two_image_frame, width=IMAGE_PREVIEW_SIZE, height=IMAGE_PREVIEW_SIZE)
-        left_frame.pack(side=tk.LEFT, padx=(0, CONSTANT_SPACING_BETWEEN_IMAGES), pady=20)
-
-        # RIGHT IMAGE
-        right_frame = tk.Frame(two_image_frame, width=IMAGE_PREVIEW_SIZE, height=IMAGE_PREVIEW_SIZE)
-        right_frame.pack(side=tk.LEFT, padx=(0,0), pady=20)
+        right_frame = tk.Frame(self.images_container, width=IMAGE_PREVIEW_SIZE, height=IMAGE_PREVIEW_SIZE)
+        right_frame.grid(row=0, column=1, padx=IMAGE_PREVIEW_PADDING, pady=20)
 
         processed_array = self.get_processed_image()
         self.current_processed_image = processed_array
 
-        from PIL import Image
         image1 = Image.fromarray(self.original_image)
         image2 = Image.fromarray(processed_array)
 
@@ -483,6 +471,7 @@ class ImageProcessorApp:
     def save_image(self):
         if self.original_image is None:
             return
+        # processed = self.get_processed_image()
         processed = self.current_processed_image
         file_path = filedialog.asksaveasfilename(
             defaultextension=".png",
@@ -492,6 +481,7 @@ class ImageProcessorApp:
             from PIL import Image
             out_img = Image.fromarray(processed)
             out_img.save(file_path)
+
 
     def apply_changes(self):
         image = self.get_processed_image()
@@ -506,6 +496,10 @@ class ImageProcessorApp:
             self.display_images()
 
     def restore_default(self):
+        """
+        Restores the default settings, resets all toggles, and resets all sliders to default values.
+        """
+        # Reset toggle options
         self.grayscale = False
         self.binarized = False
         self.negatived = False
@@ -523,18 +517,23 @@ class ImageProcessorApp:
         self.apply_edge_detection = False
         self.edge_detection_type = None
 
-        # Reset sliders
-        self.binarize_threshold_slider.set(128)
-        self.brightness_slider.set(0)
-        self.contrast_slider.set(1)
-        self.gauss_filter_sigma_slider.set(3)
-        self.mean_filter_sigma_slider.set(3)
-        self.sharpen_filter_sigma_slider.set(3)
+        # Reset sliders to default values
+        self.binarize_threshold_slider.set(128)  # Default threshold for binarization
+        self.brightness_slider.set(0)            # Default brightness
+        self.contrast_slider.set(1)              # Default contrast
+        self.gauss_filter_sigma_slider.set(3)    # Default Gaussian kernel size
+        self.mean_filter_sigma_slider.set(3)     # Default Mean filter size
+        self.sharpen_filter_sigma_slider.set(3)  # Default Sharpen filter size
 
+        # Refresh images
         self.display_images()
+
 
     # =================== OBLICZANIE OBRAZU PO PRZETWORZENIU ===================
     def get_processed_image(self):
+        """
+        Zwraca obraz w postaci numpy array po wszystkich włączonych transformacjach.
+        """
         image = self.original_image.copy().astype(np.float32)
 
         # 1. Grayscale
@@ -555,7 +554,7 @@ class ImageProcessorApp:
         image = self.apply_brightness(image, self.brightness)
         image = self.adjust_contrast(image, self.contrast)
 
-        # 5. Filters
+        # 5. Filtry
         if self.apply_gauss_filter:
             image = self.apply_convolution(image, self.gauss_filter(), self.gauss_filter_sigma)
         if self.apply_mean_filter:
@@ -565,20 +564,21 @@ class ImageProcessorApp:
         if self.apply_custom_filter and self.custom_filter_kernel is not None:
             image = self.apply_convolution(image, self.custom_filter_kernel, 3)
 
-        # 6. Edge detection
+        # 6. Krawędzie
         if self.apply_edge_detection and self.edge_detection_type is not None:
             if self.edge_detection_type == "roberts":
                 image = self.apply_roberts_cross(image)
             elif self.edge_detection_type == "sobel":
                 image = self.apply_sobel(image)
 
+        # Koniec
         image = np.clip(image, 0, 255).astype(np.uint8)
         return image
 
     # ---------------------- PRZETWARZANIE PODSTAWOWE ----------------------
     def convert_to_grayscale(self, img_matrix):
-        if len(img_matrix.shape) == 3:
-            gray = np.dot(img_matrix[:, :, :3], [0.299, 0.587, 0.114])
+        if len(img_matrix.shape) == 3:  # kolor
+            gray = np.dot(img_matrix[:,:,:3], [0.299, 0.587, 0.114])
             return gray
         else:
             return img_matrix
@@ -603,9 +603,9 @@ class ImageProcessorApp:
         img_in = image.astype(np.float32)
 
         if len(img_in.shape) == 3:  # RGB
-            R = img_in[:, :, 0]
-            G = img_in[:, :, 1]
-            B = img_in[:, :, 2]
+            R = img_in[:,:,0]
+            G = img_in[:,:,1]
+            B = img_in[:,:,2]
 
             Rf = self.convolve2d(R, kernel)
             Gf = self.convolve2d(G, kernel)
@@ -667,11 +667,9 @@ class ImageProcessorApp:
             size = 3
 
         if size == 3:
-            kernel = np.array([
-                [ 0, -1,  0],
-                [-1,  5, -1],
-                [ 0, -1,  0]
-            ], dtype=np.float32)
+            kernel = np.array([[ 0, -1,  0],
+                               [-1,  5, -1],
+                               [ 0, -1,  0]], dtype=np.float32)
         else:
             kernel = np.full((size, size), -1, dtype=np.float32)
             kernel[size//2, size//2] = size * size
@@ -712,8 +710,8 @@ class ImageProcessorApp:
     def apply_roberts_cross(self, image):
         if len(image.shape) == 3:
             image = self.convert_to_grayscale(image)
-        gx = np.array([[1, 0], [0, -1]], dtype=np.float32)
-        gy = np.array([[0, 1], [-1, 0]], dtype=np.float32)
+        gx = np.array([[1, 0],[0, -1]], dtype=np.float32)
+        gy = np.array([[0, 1],[-1, 0]], dtype=np.float32)
 
         ix = self.convolve2d(image, gx)
         iy = self.convolve2d(image, gy)
@@ -724,16 +722,8 @@ class ImageProcessorApp:
         if len(image.shape) == 3:
             image = self.convert_to_grayscale(image)
 
-        gx = np.array([
-            [-1,0,1],
-            [-2,0,2],
-            [-1,0,1]
-        ], dtype=np.float32)
-        gy = np.array([
-            [ 1,2,1],
-            [ 0,0,0],
-            [-1,-2,-1]
-        ], dtype=np.float32)
+        gx = np.array([[-1,0,1],[-2,0,2],[-1,0,1]], dtype=np.float32)
+        gy = np.array([[ 1,2,1],[ 0,0,0],[-1,-2,-1]], dtype=np.float32)
 
         ix = self.convolve2d(image, gx)
         iy = self.convolve2d(image, gy)
@@ -796,11 +786,18 @@ class ImageProcessorApp:
 
     # ---------------------- WYKRESY (HISTOGRAM, PROJEKCJE) ----------------------
     def clear_chart_if_exists(self):
+        """
+        Usuwa poprzedni wykres (jeżeli istnieje).
+        """
         if self.chart_canvas:
             self.chart_canvas.get_tk_widget().destroy()
             self.chart_canvas = None
 
+
     def generate_histogram(self):
+        """
+        Displays a histogram of the processed image in self.charts_frame.
+        """
         self.clear_chart_if_exists()
         processed = self.get_processed_image()
 
@@ -813,7 +810,7 @@ class ImageProcessorApp:
             flat = processed.flatten()
             for v in flat:
                 hist_vals[v] += 1
-            hist_vals = hist_vals / np.sum(hist_vals)  
+            hist_vals = hist_vals / np.sum(hist_vals)  # Normalize
             ax.bar(range(256), hist_vals)
             ax.set_title("Histogram (Grayscale)")
         else:
@@ -829,13 +826,20 @@ class ImageProcessorApp:
             ax.set_title("Histogram (RGB)")
 
         ax.set_xlim([0, 255])
-        fig.tight_layout()
+        # ax.set_xlabel("Pixel Value")
+        # ax.set_ylabel("Frequency")
+
+        fig.tight_layout()  # Ensures labels fit inside the figure
 
         self.chart_canvas = FigureCanvasTkAgg(fig, master=self.charts_frame)
         self.chart_canvas.draw()
         self.chart_canvas.get_tk_widget().pack(expand=True, fill="both")
 
+
     def generate_horizontal_projection(self):
+        """
+        Displays horizontal projection (sum of intensities along rows).
+        """
         self.clear_chart_if_exists()
         processed = self.get_processed_image()
         
@@ -843,20 +847,24 @@ class ImageProcessorApp:
             processed = self.convert_to_grayscale(processed)
 
         horizontal_proj = np.sum(processed, axis=1)
-        horizontal_proj = horizontal_proj / np.max(horizontal_proj)
-
+        horizontal_proj = horizontal_proj / np.max(horizontal_proj)  # Normalize
         fig = plt.Figure(figsize=(CHART_FIG_WIDTH, CHART_FIG_HEIGHT))
         ax = fig.add_subplot(111)
         ax.plot(range(len(horizontal_proj)), horizontal_proj)
         ax.set_title("Horizontal Projection")
+        # ax.set_xlabel("Row Index")
+        # ax.set_ylabel("Intensity Sum")
 
-        fig.subplots_adjust(left=0.15, right=0.95, top=0.90, bottom=0.15)
+        fig.subplots_adjust(left=0.15, right=0.95, top=0.90, bottom=0.15)  # Adjust margins
 
         self.chart_canvas = FigureCanvasTkAgg(fig, master=self.charts_frame)
         self.chart_canvas.draw()
         self.chart_canvas.get_tk_widget().pack(expand=True, fill="both")
 
     def generate_vertical_projection(self):
+        """
+        Displays vertical projection (sum of intensities along columns).
+        """
         self.clear_chart_if_exists()
         processed = self.get_processed_image()
         
@@ -864,18 +872,21 @@ class ImageProcessorApp:
             processed = self.convert_to_grayscale(processed)
 
         vertical_proj = np.sum(processed, axis=0)
-        vertical_proj = vertical_proj / np.max(vertical_proj)
+        vertical_proj = vertical_proj / np.max(vertical_proj)  # Normalize
 
         fig = plt.Figure(figsize=(CHART_FIG_WIDTH, CHART_FIG_HEIGHT))
         ax = fig.add_subplot(111)
         ax.plot(range(len(vertical_proj)), vertical_proj)
         ax.set_title("Vertical Projection")
+        # ax.set_xlabel("Column Index")
+        # ax.set_ylabel("Intensity Sum")
 
-        fig.subplots_adjust(left=0.15, right=0.95, top=0.90, bottom=0.15)
+        fig.subplots_adjust(left=0.15, right=0.95, top=0.90, bottom=0.15)  # Adjust margins
 
         self.chart_canvas = FigureCanvasTkAgg(fig, master=self.charts_frame)
         self.chart_canvas.draw()
         self.chart_canvas.get_tk_widget().pack(expand=True, fill="both")
+
 
     # ---------------------- ROZMIAR PODGLĄDU ----------------------
     def resize_preview(self, pil_image):
