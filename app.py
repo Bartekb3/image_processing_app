@@ -13,7 +13,7 @@ WINDOW_WIDTH = 1100
 WINDOW_HEIGHT = 700
 
 IMAGE_PREVIEW_SIZE = 350
-IMAGE_PREVIEW_PADDING = 30  # We'll still use this for consistent offsets
+IMAGE_PREVIEW_PADDING = 30  
 
 OPTION_BUTTON_HEIGHT = 2
 OPTION_BUTTON_WIDTH = 26
@@ -28,12 +28,11 @@ BOTTOM_BUTTON_WIDTH = 15
 BOTTOM_BUTTON_HEIGHT = 3
 
 # ------------------ PARAMETRY OBSZARU WYKRESU ------------------
-CHART_FRAME_WIDTH = 300    # szerokość ramki na wykres
-CHART_FRAME_HEIGHT = 250   # wysokość ramki na wykres
-CHART_FIG_WIDTH = 3        # szerokość figury (w calach) w matplotlib
-CHART_FIG_HEIGHT = 2.5     # wysokość figury (w calach) w matplotlib
+CHART_FRAME_WIDTH = 300   
+CHART_FRAME_HEIGHT = 250  
+CHART_FIG_WIDTH = 3       
+CHART_FIG_HEIGHT = 2.5    
 
-# CONSTANT SPACING BETWEEN TWO PLACEHOLDERS/IMAGES
 CONSTANT_SPACING_BETWEEN_IMAGES = 40
 
 class ImageProcessorApp:
@@ -72,9 +71,9 @@ class ImageProcessorApp:
         
         # Wykrywanie krawędzi
         self.apply_edge_detection = False
-        self.edge_detection_type = None  # np. "roberts" albo "sobel"
+        self.edge_detection_type = None  # "roberts" albo "sobel"
 
-        # ----- TOOLBAR (pasek górny) -----
+        # ----- TOOLBAR -----
         self.toolbar = tk.Frame(self.root, bg="#d9d9d9", height=TOOLBAR_HEIGHT)
         self.toolbar.pack(fill=tk.X, side=tk.TOP, padx=5, pady=5)
         
@@ -89,17 +88,17 @@ class ImageProcessorApp:
         self.save_button.pack(side=tk.LEFT, padx=5, pady=5)
         
         self.reset_button = tk.Button(
-            self.toolbar, text="Default settings", relief=tk.RAISED, padx=10, pady=5, command=self.restore_default
+            self.toolbar, text="Ustawienia domyślne", relief=tk.RAISED, padx=10, pady=5, command=self.restore_default
         )
         self.reset_button.pack(side=tk.LEFT, padx=5, pady=5)
 
         self.revert_button = tk.Button(
-            self.toolbar, text="Revert all", relief=tk.RAISED, padx=10, pady=5, command=self.revert_all
+            self.toolbar, text="Cofnij wszystko", relief=tk.RAISED, padx=10, pady=5, command=self.revert_all
         )
         self.revert_button.pack(side=tk.LEFT, padx=5, pady=5)
 
         self.apply_button = tk.Button(
-            self.toolbar, text="Apply", relief=tk.RAISED, padx=10, pady=5, command=self.apply_changes
+            self.toolbar, text="Zastosuj", relief=tk.RAISED, padx=10, pady=5, command=self.apply_changes
         )
         self.apply_button.pack(side=tk.LEFT, padx=5, pady=5)
         
@@ -108,23 +107,22 @@ class ImageProcessorApp:
         )
         self.exit_button.pack(side=tk.LEFT, padx=5, pady=5)
         
-        # ----- GŁÓWNA RAMKA (reszta okna) -----
+        # ----- GŁÓWNA RAMKA -----
         self.main_frame = tk.Frame(self.root, bg="#f0f0f0")
         self.main_frame.pack(fill=tk.BOTH, expand=True)
 
-        # ----- LEWY PANEL (SIDEBAR) -----
+        # ----- SIDEBAR -----
         self.sidebar_frame = tk.Frame(self.main_frame, bg="#e0e0e0")
         self.sidebar_frame.pack(side=tk.LEFT, fill=tk.Y, padx=5, pady=5)
         self.sidebar_frame.configure(width=SIDEBAR_WIDTH)
         
         self.create_sidebar()
 
-        # ----- PRAWY PANEL: OBRAZY + WYKRES -----
+        # ----- OBRAZY + WYKRES -----
         self.image_display_frame = tk.Frame(self.main_frame, bg="#ffffff")
         self.image_display_frame.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
 
         # 1) Kontener na obrazy
-        # We'll use pack here, so we can anchor top. 
         self.images_container = tk.Frame(self.image_display_frame, bg="#ffffff")
         self.images_container.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
 
@@ -158,9 +156,9 @@ class ImageProcessorApp:
         self.scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
 
         # Sekcje
-        self.create_base_functions("Basic Functions")
-        self.create_filters_functions("Filters")
-        self.create_custom_filter_section("Custom Filter")
+        self.create_base_functions("Funkcje podstawowe")
+        self.create_filters_functions("Filtry")
+        self.create_custom_filter_section("Własny filtr")
         self.create_edge_detection_section("Wykrywanie krawędzi")
         self.create_plots_section("Wykresy")
 
@@ -185,17 +183,17 @@ class ImageProcessorApp:
         section_content.pack(fill=tk.X)
 
         tk.Button(
-            section_content, text="Grayscale", width=SIDEBAR_INSIDE_BUTTON_WIDTH,
+            section_content, text="Skala szarości", width=SIDEBAR_INSIDE_BUTTON_WIDTH,
             height=SIDEBAR_INSIDE_BUTTON_HEIGHT, command=self.change_grayscale
         ).pack(pady=5)
 
         tk.Button(
-            section_content, text="Negative", width=SIDEBAR_INSIDE_BUTTON_WIDTH,
+            section_content, text="Negatyw", width=SIDEBAR_INSIDE_BUTTON_WIDTH,
             height=SIDEBAR_INSIDE_BUTTON_HEIGHT, command=self.change_negative
         ).pack(pady=5)
 
         tk.Button(
-            section_content, text="Binarize", width=SIDEBAR_INSIDE_BUTTON_WIDTH,
+            section_content, text="Binaryzacja", width=SIDEBAR_INSIDE_BUTTON_WIDTH,
             height=SIDEBAR_INSIDE_BUTTON_HEIGHT, command=self.change_binarization
         ).pack(pady=5)
         
@@ -206,14 +204,14 @@ class ImageProcessorApp:
         self.binarize_threshold_slider.bind("<ButtonRelease-1>", self.on_binarize_threshold_release)
 
         # Brightness
-        tk.Label(section_content, text="Brightness").pack()
+        tk.Label(section_content, text="Jasność").pack()
         self.brightness_slider = tk.Scale(section_content, from_=-255, to=255, resolution=1, orient=tk.HORIZONTAL)
         self.brightness_slider.pack(fill=tk.X, padx=5, pady=5)
         self.brightness_slider.set(0)
         self.brightness_slider.bind("<ButtonRelease-1>", self.on_brightness_release)
 
         # Contrast
-        tk.Label(section_content, text="Contrast").pack()
+        tk.Label(section_content, text="Kontrast").pack()
         self.contrast_slider = tk.Scale(section_content, from_=0, to=5, resolution=0.1, orient=tk.HORIZONTAL)
         self.contrast_slider.pack(fill=tk.X, padx=5, pady=5)
         self.contrast_slider.set(1)
@@ -237,11 +235,11 @@ class ImageProcessorApp:
         
         # Gauss
         tk.Button(
-            section_content, text="Apply gauss filter", width=SIDEBAR_INSIDE_BUTTON_WIDTH,
+            section_content, text="Zastosuj filtr gaussa", width=SIDEBAR_INSIDE_BUTTON_WIDTH,
             height=SIDEBAR_INSIDE_BUTTON_HEIGHT, command=self.add_gauss_filter
         ).pack(pady=5)
 
-        tk.Label(section_content, text="Gauss filter size").pack()
+        tk.Label(section_content, text="Rozmiar filtru gaussa").pack()
         self.gauss_filter_sigma_slider = tk.Scale(section_content, from_=3, to=21, resolution=2, orient=tk.HORIZONTAL)
         self.gauss_filter_sigma_slider.pack(fill=tk.X, padx=5, pady=5)
         self.gauss_filter_sigma_slider.set(3)
@@ -249,11 +247,11 @@ class ImageProcessorApp:
 
         # Mean
         tk.Button(
-            section_content, text="Apply mean filter", width=SIDEBAR_INSIDE_BUTTON_WIDTH,
+            section_content, text="Zastosuj filtr uśredniający", width=SIDEBAR_INSIDE_BUTTON_WIDTH,
             height=SIDEBAR_INSIDE_BUTTON_HEIGHT, command=self.add_mean_filter
         ).pack(pady=5)
 
-        tk.Label(section_content, text="Mean filter size").pack()
+        tk.Label(section_content, text="Rozmiar filtru uśredniającego").pack()
         self.mean_filter_sigma_slider = tk.Scale(section_content, from_=3, to=21, resolution=2, orient=tk.HORIZONTAL)
         self.mean_filter_sigma_slider.pack(fill=tk.X, padx=5, pady=5)
         self.mean_filter_sigma_slider.set(3)
@@ -261,11 +259,11 @@ class ImageProcessorApp:
 
         # Sharpen
         tk.Button(
-            section_content, text="Apply sharpen filter", width=SIDEBAR_INSIDE_BUTTON_WIDTH,
+            section_content, text="Zastosuj filtr wyostrzający", width=SIDEBAR_INSIDE_BUTTON_WIDTH,
             height=SIDEBAR_INSIDE_BUTTON_HEIGHT, command=self.add_sharpen_filter
         ).pack(pady=5)
 
-        tk.Label(section_content, text="Sharpen filter size").pack()
+        tk.Label(section_content, text="Rozmiar filtru wyostrzającego").pack()
         self.sharpen_filter_sigma_slider = tk.Scale(section_content, from_=3, to=21, resolution=2, orient=tk.HORIZONTAL)
         self.sharpen_filter_sigma_slider.pack(fill=tk.X, padx=5, pady=5)
         self.sharpen_filter_sigma_slider.set(3)
@@ -287,7 +285,7 @@ class ImageProcessorApp:
         section_content = tk.Frame(section_frame, bg="#dcdcdc")
         section_content.pack(fill=tk.X)
         
-        tk.Label(section_content, text="Enter 3x3 kernel values:").pack(pady=5)
+        tk.Label(section_content, text="Wprowadź wartości kernela").pack(pady=5)
         self.custom_filter_entries = []
         for i in range(3):
             row_frame = tk.Frame(section_content, bg="#dcdcdc")
@@ -300,8 +298,8 @@ class ImageProcessorApp:
                 row_entries.append(e)
             self.custom_filter_entries.append(row_entries)
         
-        tk.Button(section_content, text="Set Custom Filter", command=self.set_custom_filter).pack(pady=5)
-        tk.Button(section_content, text="Apply Custom Filter", command=self.toggle_custom_filter).pack(pady=5)
+        tk.Button(section_content, text="Ustaw filtr", command=self.set_custom_filter).pack(pady=5)
+        tk.Button(section_content, text="Zastosuj filtr", command=self.toggle_custom_filter).pack(pady=5)
         
         section_content.pack_forget()
 
@@ -320,7 +318,7 @@ class ImageProcessorApp:
         section_content.pack(fill=tk.X)
 
         tk.Button(
-            section_content, text="Roberts Cross", width=SIDEBAR_INSIDE_BUTTON_WIDTH, height=SIDEBAR_INSIDE_BUTTON_HEIGHT,
+            section_content, text="Krzyż Robertsa", width=SIDEBAR_INSIDE_BUTTON_WIDTH, height=SIDEBAR_INSIDE_BUTTON_HEIGHT,
             command=lambda: self.activate_edge_detection("roberts")
         ).pack(pady=5)
 
@@ -376,10 +374,9 @@ class ImageProcessorApp:
         for widget in self.images_container.winfo_children():
             widget.destroy()
 
-        # Create a sub-frame that we will center, with side-by-side placeholders
         two_image_frame = tk.Frame(self.images_container, bg="#ffffff")
         two_image_frame.pack(expand=True, anchor="center")  
-        # anchor="center" ensures the entire frame is centered horizontally
+
 
         # LEFT PLACEHOLDER
         left_frame = tk.Frame(
@@ -417,6 +414,7 @@ class ImageProcessorApp:
         placeholder_label = tk.Label(self.charts_frame, text="Wykres", bg="#ddd")
         placeholder_label.place(relx=0.5, rely=0.5, anchor=tk.CENTER)
 
+
     # =================== WYŚWIETLANIE OBRAZÓW PO WCZYTANIU ===================
     def display_images(self):
         """
@@ -430,15 +428,12 @@ class ImageProcessorApp:
             self.display_placeholder_images()
             return
 
-        # Create a sub-frame to hold both images side by side
         two_image_frame = tk.Frame(self.images_container, bg="#ffffff")
         two_image_frame.pack(expand=True, anchor="center")
 
-        # LEFT IMAGE
         left_frame = tk.Frame(two_image_frame, width=IMAGE_PREVIEW_SIZE, height=IMAGE_PREVIEW_SIZE)
         left_frame.pack(side=tk.LEFT, padx=(0, CONSTANT_SPACING_BETWEEN_IMAGES), pady=20)
 
-        # RIGHT IMAGE
         right_frame = tk.Frame(two_image_frame, width=IMAGE_PREVIEW_SIZE, height=IMAGE_PREVIEW_SIZE)
         right_frame.pack(side=tk.LEFT, padx=(0,0), pady=20)
 
@@ -523,7 +518,6 @@ class ImageProcessorApp:
         self.apply_edge_detection = False
         self.edge_detection_type = None
 
-        # Reset sliders
         self.binarize_threshold_slider.set(128)
         self.brightness_slider.set(0)
         self.contrast_slider.set(1)
